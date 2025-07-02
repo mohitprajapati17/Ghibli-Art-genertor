@@ -1,14 +1,30 @@
-# Use OpenJDK 21 base image
-FROM eclipse-temurin:21-jdk-alpine
+# Start with official Maven image
+FROM maven:3.9.4-eclipse-temurin-21 AS build
 
 # Set working directory
 WORKDIR /app
 
-# Copy built jar from target folder into the container
-COPY target/Ghibli-ai-0.0.1-SNAPSHOT.jar app.jar
+# Copy pom.xml and download dependencies
+COPY pom.xml .
+RUN mvn dependency:go-offline
 
-# Expose the port your app runs on
+# Copy the rest of the source code
+COPY src ./src
+
+# Build the project
+RUN mvn clean package -DskipTests
+
+# Second stage: use a slim JDK for running the app
+FROM eclipse-temurin:21-jre
+
+# Set working directory
+WORKDIR /app
+
+# Copy the built jar from the previous stage
+COPY --from=build /app/target/*.jar app.jar
+
+# Expose port (make sure this matches your app's port)
 EXPOSE 8080
 
-# Run the jar file
+# Run the jar
 ENTRYPOINT ["java", "-jar", "app.jar"]
