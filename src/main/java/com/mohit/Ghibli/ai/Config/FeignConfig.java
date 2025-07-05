@@ -11,10 +11,17 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class FeignConfig {
 
+//    @Bean
+//    public Encoder feignFormEncode(){
+//        return new SpringFormEncoder(
+//                new SpringEncoder(()-> new HttpMessageConverters(new RestTemplate().getMessageConverters()))
+//        );
+//    }
+
     @Bean
-    public Encoder feignFormEncode(){
-        return new SpringFormEncoder(
-                new SpringEncoder(()-> new HttpMessageConverters(new RestTemplate().getMessageConverters()))
-        );
+    public Encoder feignFormEncoder() {
+        return new SpringFormEncoder(new SpringEncoder(() ->
+                new HttpMessageConverters(new RestTemplate().getMessageConverters())));
     }
+
 }
